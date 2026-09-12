@@ -2,6 +2,7 @@ import "package:findmyot/models/user.dart";
 import "package:findmyot/providers/auth_provider.dart";
 import "package:findmyot/providers/devices_provider.dart";
 import "package:findmyot/providers/useapi_provider.dart";
+import "package:findmyot/utils/button_handlers.dart";
 // import "package:findmyot/widgets/error_dialog.dart";
 import "package:findmyot/widgets/signup_dialog.dart";
 import "package:findmyot/widgets/status_dialog.dart";
@@ -103,29 +104,21 @@ Column buildBody(BuildContext context) {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () async {
-              Result res = await context.read<AuthProvider>().login(
-                usernameController.text,
-                passwordController.text
-              );
-
-              if (res.success){
-                await context.read<DevicesProvider>().fetchDevices();
-                Navigator.pushReplacement(
+            onPressed: () {
+              UserHandlers.onLogin(
+                authProvider: context.read<AuthProvider>(),
+                username: usernameController.text,
+                password: passwordController.text,
+                onSuccess: () => Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const MainScreen()),
-                );
-              } else {
-                // showDialog(
-                //   context: context, 
-                //   builder: ((context) => ErrorDialog(message: res.error!))
-                // );
-                showStatusDialog(
-                  context, 
-                  status: DialogStatus.error, 
-                  message: res.error!
-                );
-              }
+                  MaterialPageRoute(builder: (context) => const MainScreen())
+                ),
+                onFailure: (String msg) => showStatusDialog(
+                  context,
+                  status: DialogStatus.error,
+                  message: msg
+                )
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
@@ -154,21 +147,23 @@ Column buildBody(BuildContext context) {
               context: context,
               builder: (context) => SignUpDialog()
             );
-
-            Result res = await context.read<AuthProvider>().signUp(newUser);
-            if (res.success) {
-              showStatusDialog(
-                context, 
-                status: DialogStatus.success, 
-                message: "User Created Successfully"
+            
+            if (newUser != null){
+              UserHandlers.onSignup(
+                authProvider: context.read<AuthProvider>(), 
+                newUser: newUser,
+                onSuccess: () => showStatusDialog(
+                  context, 
+                  status: DialogStatus.success, 
+                  message: "User Created Successfully"
+                ),
+                onFailure: (String msg) => showStatusDialog(
+                  context,
+                  status: DialogStatus.error, 
+                  message: msg
+                )
               );
-            } else {
-              showStatusDialog(
-                context,
-                status: DialogStatus.error, 
-                message: res.error!
-              );
-            }
+            }            
           },
           child: Text(
             "Sign Up",

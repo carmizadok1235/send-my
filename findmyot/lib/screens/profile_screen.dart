@@ -3,6 +3,7 @@ import 'package:findmyot/providers/auth_provider.dart';
 import 'package:findmyot/providers/devices_provider.dart';
 import 'package:findmyot/providers/useapi_provider.dart';
 import 'package:findmyot/utils/apple.dart';
+import 'package:findmyot/utils/button_handlers.dart';
 import 'package:findmyot/widgets/status_dialog.dart';
 import 'package:findmyot/widgets/two_factor_auth_dialog.dart';
 import 'package:flutter/material.dart';
@@ -172,27 +173,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    Result res = await authProvider.updateProfile(
-                      authProvider.user!.id, 
-                      _usernameController.text.trim(),
-                      _appleIdController.text.trim(), 
-                      _appleIdPasswordController.text.trim()
-                    );
-
-                    if (res.success) {
-                      showStatusDialog(
+                    UserHandlers.onUpdate(
+                      authProvider: authProvider,
+                      username: _usernameController.text.trim(), 
+                      appleId: _appleIdController.text.trim(), 
+                      appleIdPassword: _appleIdPasswordController.text.trim(), 
+                      onSuccess: () => showStatusDialog(
                         context, 
                         status: DialogStatus.success, 
                         message: "User Updated Successfully"
-                      );
-                      await authProvider.refreshUser();
-                    } else {
-                      showStatusDialog(
+                      ), 
+                      onFailure: (String msg) => showStatusDialog(
                         context, 
                         status: DialogStatus.error, 
-                        message: res.error!
-                      );
-                    }
+                        message: msg
+                      )
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
